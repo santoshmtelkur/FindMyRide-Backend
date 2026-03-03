@@ -11,7 +11,7 @@ import java.util.Map;
 public class TestController {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+       private JdbcTemplate jdbcTemplate;
 
     @PostMapping("/signup")
     public String signup(@RequestBody Map<String, Object> formData) {
@@ -37,7 +37,7 @@ public class TestController {
             }
 
             // ✅ Check mobile already exists
-            String mobileCheckSql = "SELECT COUNT(*) FROM register WHERE mobile_number = ?";
+            String mobileCheckSql = "SELECT COUNT(*) FROM users WHERE mobile_number = ?";
             Integer mobileCount = jdbcTemplate.queryForObject(mobileCheckSql, Integer.class, mobile);
 
             if (mobileCount != null && mobileCount > 0) {
@@ -47,7 +47,7 @@ public class TestController {
             // ✅ Check email only if provided
             if (email != null && !email.trim().isEmpty()) {
 
-                String emailCheckSql = "SELECT COUNT(*) FROM register WHERE email = ?";
+                String emailCheckSql = "SELECT COUNT(*) FROM users WHERE email = ?";
                 Integer emailCount = jdbcTemplate.queryForObject(emailCheckSql, Integer.class, email);
 
                 if (emailCount != null && emailCount > 0) {
@@ -59,7 +59,7 @@ public class TestController {
             }
 
             // ✅ Insert data
-            String insertSql = "INSERT INTO register " +
+            String insertSql = "INSERT INTO users " +
                     "(first_name, last_name, country_code, mobile_number, password, email, gender) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
@@ -79,5 +79,41 @@ public class TestController {
             e.printStackTrace();
             return "Something went wrong ❌";
         }
+
+
+    }
+    @PostMapping("/send-otp")
+    public String sendOtp() {
+
+        System.out.println("OTP API called");
+
+        return "success";
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
