@@ -85,10 +85,19 @@ public class TestController {
     @PostMapping("/send-otp")
     public String sendOtp() {
 
-        System.out.println("OTP API called");
+        System.out.println("OTP  called");
 
         return "success";
     }
+
+    @PostMapping("/otpemail")
+    public String otpemail() {
+
+        System.out.println("OTP  called");
+
+        return "success";
+    }
+
 }
 
 
