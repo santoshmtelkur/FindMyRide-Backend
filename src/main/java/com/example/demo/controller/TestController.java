@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000")
@@ -11,22 +12,21 @@ import java.util.Map;
 public class TestController {
 
     @Autowired
-       private JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
     @PostMapping("/signup")
     public String signup(@RequestBody Map<String, Object> formData) {
 
         String firstname = (String) formData.get("firstname");
-        String lastname = (String) formData.get("lastname"); // optional
+        String lastname = (String) formData.get("lastname");
         String countryCode = (String) formData.get("countryCode");
-        String mobile = (String) formData.get("mobile");
+        String mobile = String.valueOf(formData.get("mobile"));
         String password = (String) formData.get("password");
-        String email = (String) formData.get("email"); // optional
+        String email = (String) formData.get("email");
         String gender = (String) formData.get("gender");
 
         try {
 
-            // ✅ Check required fields
             if (firstname == null || firstname.isEmpty() ||
                     mobile == null || mobile.isEmpty() ||
                     countryCode == null || countryCode.isEmpty() ||
@@ -36,7 +36,6 @@ public class TestController {
                 return "Required fields missing ❌";
             }
 
-            // ✅ Check mobile already exists
             String mobileCheckSql = "SELECT COUNT(*) FROM users WHERE mobile_number = ?";
             Integer mobileCount = jdbcTemplate.queryForObject(mobileCheckSql, Integer.class, mobile);
 
@@ -44,7 +43,6 @@ public class TestController {
                 return "Mobile number already registered ❌";
             }
 
-            // ✅ Check email only if provided
             if (email != null && !email.trim().isEmpty()) {
 
                 String emailCheckSql = "SELECT COUNT(*) FROM users WHERE email = ?";
@@ -55,21 +53,20 @@ public class TestController {
                 }
 
             } else {
-                email = null; // store as NULL in DB if empty
+                email = null;
             }
 
-            // ✅ Insert data
             String insertSql = "INSERT INTO users " +
-                    "(first_name, last_name, country_code, mobile_number, password, email, gender) " +
+                    "(first_name, last_name, country_code, mobile_number, email, password, gender) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             jdbcTemplate.update(insertSql,
                     firstname,
-                    lastname,     // can be null
+                    lastname,
                     countryCode,
                     mobile,
+                    email,
                     password,
-                    email,        // can be null
                     gender
             );
 
@@ -77,52 +74,53 @@ public class TestController {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return "Something went wrong ❌";
+            return "Something went wrong";
         }
-
-
     }
+
     @PostMapping("/send-otp")
     public String sendOtp() {
-
         System.out.println("OTP  called");
-
         return "success";
     }
 
     @PostMapping("/otpemail")
     public String otpemail() {
-
         System.out.println("OTP  called");
-
         return "success";
     }
 
+    @PostMapping("/login")
+    public String login(@RequestBody Map<String, Object> formData) {
+
+        String identifier = (String) formData.get("identifier");
+        String password = (String) formData.get("password");
+
+        try {
+
+            String sql = "SELECT password FROM users WHERE email=? OR mobile_number=?";
+
+            List<String> passwords = jdbcTemplate.query(
+                    sql,
+                    (rs, rowNum) -> rs.getString("password"),
+                    identifier, identifier
+            );
+
+            if (passwords.isEmpty()) {
+                return "User Not Found";
+            }
+
+            String dbPassword = passwords.get(0);
+
+            if (dbPassword.equals(password)) {
+                return "Success";
+            } else {
+                return "Wrong Password";
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Something went wrong";
+        }
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
