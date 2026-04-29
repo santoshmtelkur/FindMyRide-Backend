@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import com.example.demo.entity.users;
+import com.example.demo.repository.userRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +13,8 @@ import java.util.Map;
 @RestController
 public class TestController {
 
+    @Autowired
+    private userRepository userRepository;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -90,30 +94,23 @@ public class TestController {
         return "success";
     }
 
+
     @PostMapping("/login")
     public String login(@RequestBody Map<String, Object> formData) {
 
-        String identifier = (String) formData.get("identifier");
+        String email = (String) formData.get("email");
         String password = (String) formData.get("password");
 
         try {
 
-            String sql = "SELECT password FROM users WHERE email=? OR mobile_number=?";
+            users user = userRepository.findByEmail(email);
 
-            List<String> passwords = jdbcTemplate.query(
-                    sql,
-                    (rs, rowNum) -> rs.getString("password"),
-                    identifier, identifier
-            );
-
-            if (passwords.isEmpty()) {
+            if (user == null) {
                 return "User Not Found";
             }
 
-            String dbPassword = passwords.get(0);
-
-            if (dbPassword.equals(password)) {
-                return "Success";
+            if (user.getPassword().equals(password)) {
+                return "Welcome "+user.getName();
             } else {
                 return "Wrong Password";
             }
