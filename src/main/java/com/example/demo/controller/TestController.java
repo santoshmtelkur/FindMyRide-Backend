@@ -2,14 +2,14 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.users;
 import com.example.demo.repository.userRepository;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 public class TestController {
 
@@ -96,7 +96,7 @@ public class TestController {
 
 
     @PostMapping("/login")
-    public String login(@RequestBody Map<String, Object> formData) {
+    public String login(@RequestBody Map<String, Object> formData, HttpSession session) {
 
         String email = (String) formData.get("email");
         String password = (String) formData.get("password");
@@ -110,7 +110,9 @@ public class TestController {
             }
 
             if (user.getPassword().equals(password)) {
-                return "Welcome "+user.getName();
+                session.setAttribute("name", user.getName());
+                return "success";
+
             } else {
                 return "Wrong Password";
             }
@@ -120,4 +122,23 @@ public class TestController {
             return "Something went wrong";
         }
     }
+
+    @GetMapping("/profile")
+    public Object profile(HttpSession session){
+        String name=(String) session.getAttribute("name");
+
+
+        if (name == null) {
+            return "No User";
+        }
+
+
+        return name;
+
+
+    }
+
 }
+
+
+
